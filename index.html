@@ -74,8 +74,8 @@ const vn=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,u=fx*fx
 const sst=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
 const VX=170,VZ=-190,craters=[];
 const WL=-2.5,RC=z=>-95+38*Math.sin(z*.014)+16*Math.sin(z*.037+2),PX=z=>10*Math.sin(z*.022)+7*Math.sin(z*.057+1.3)+4;
-const H0=(x,z)=>{const d=Math.hypot(x,z),b=(vn(x*.012,z*.012)*7+vn(x*.04,z*.04)*2+vn(x*.15,z*.15)*.25-4.6)*sst(6,45,d),r=Math.hypot(x-VX,z-VZ),rg=1-Math.abs(vn(x*.008+5,z*.008)*2-1),m=Math.pow(rg,1.5)*300*Math.pow(sst(110,300,d),2.2)*(.5+vn(x*.02,z*.02))*sst(60,160,r);
-const er=Math.hypot(x-130,z-175),eg=1-Math.abs(vn(x*.011+9,z*.011+3)*2-1),ev=480*Math.pow(Math.max(0,1-er/250),2.8)*(.78+.45*eg)*sst(120,200,d);const hv=b+m+ev+190*Math.pow(Math.max(0,1-r/170),2.4)-60*Math.exp(-((r/13)**2)),w=1-sst(7,28,Math.abs(x-RC(z)));return hv*(1-w)-4.2*w};
+const H0=(x,z)=>{const d=Math.hypot(x,z),b=(vn(x*.012,z*.012)*7+vn(x*.04,z*.04)*2+vn(x*.15,z*.15)*.25-4.6)*sst(6,45,d),r=Math.hypot(x-VX,z-VZ),rg=1-Math.abs(vn(x*.008+5,z*.008)*2-1),m=Math.pow(rg,1.7)*210*sst(120,240,d)*(.5+vn(x*.02,z*.02))*sst(60,160,r);
+const er=Math.hypot(x-130,z-175),eg=1-Math.abs(vn(x*.011+9,z*.011+3)*2-1),ev=420*Math.pow(Math.max(0,1-er/240),1.6)*(.78+.45*eg)*sst(120,200,d);const hv=b+m+ev+170*Math.pow(Math.max(0,1-r/150),1.5)-60*Math.exp(-((r/13)**2)),w=1-sst(7,28,Math.abs(x-RC(z)));return hv*(1-w)-4.2*w};
 let lastBurn=0;let hgOn=false,burnArr=null,HG;const Hn=(x,z)=>{let h=H0(x,z);lastBurn=0;for(const c of craters){const a=x-c.x,b=z-c.z,dd=a*a+b*b;if(dd<c.r*c.r*2.25){const r=Math.sqrt(dd)/c.r;h+=-c.d*(r<1?(1-r*r)**2:0)+c.d*.35*Math.exp(-(((r-1.08)/.28)**2));if(r<1.2)lastBurn=1}}return h};
 const H=(x,z)=>{if(!hgOn)return Hn(x,z);const u=(Math.min(299.99,Math.max(-299.99,x))+300)/1.25,v=(Math.min(299.99,Math.max(-299.99,z))+300)/1.25,i=u|0,j=v|0,fu=u-i,fv=v-j,k=j*481+i;lastBurn=burnArr&&burnArr[k]>.2?1:0;return HG[k]*(1-fu)*(1-fv)+HG[k+1]*fu*(1-fv)+HG[k+481]*(1-fu)*fv+HG[k+482]*fu*fv};
 
@@ -477,7 +477,7 @@ g.add(tu,tw,bh,kn,lo,le);const mz=new THREE.Object3D();mz.position.set(0,.014,-.
 function pistol(){const g=new THREE.Group(),mag=ext([[-.075,-.01],[-.04,-.01],[-.04,-.115],[-.075,-.115]],.02,steel,0,0,.003);
 g.add(ext([[-.09,.01],[-.09,.045],[.1,.045],[.12,.03],[.12,.01]],.026,blued,0,0,.004),ext([[-.07,.01],[.08,.01],[.09,-.005],[0,-.012],[-.01,-.03],[-.06,-.11],[-.095,-.1],[-.085,-.03],[-.08,.005]],.024,poly,0,0,.004),mag,
 cy(.007,.007,.03,0,.03,-.13,steel),bx(.012,.008,.01,0,.052,.09,dark),bx(.006,.008,.008,0,.052,-.105,dark),bx(.004,.025,.006,0,-.03,.0,blued,.2),guard());
-const mz=new THREE.Object3D();mz.position.set(0,.03,-.14);g.add(mz);return{g,mz,mag}}
+const mz=new THREE.Object3D();mz.position.set(0,.03,-.14);g.add(mz);return{g,mz,magM:mag}}
 function shotgun(){const g=new THREE.Group(),pump=ext([[.17,-.03],[.17,.02],[.4,.022],[.42,-.02],[.38,-.035]],.046,wood2,0,0,.008);
 g.add(cy(.0125,.0125,.7,0,.02,-.45,blued),cy(.011,.011,.5,0,-.012,-.36,blued),ext([[-.1,-.04],[-.1,.04],[0,.045],[.14,.04],[.14,-.035],[.05,-.045]],.04,blued),pump,
 ext([[-.1,.03],[-.2,.045],[-.45,.03],[-.5,.0],[-.5,-.09],[-.45,-.1],[-.2,-.06],[-.1,-.05]],.045,wood2,0,0,.006),ext([[-.5,.0],[-.506,.0],[-.506,-.09],[-.5,-.09]],.047,poly),
@@ -501,7 +501,7 @@ const WP=[Object.assign(ak(),{n:'AK-47',mag:30,dmg:34,rt:2,cd:.1,auto:1,k:.5,rec
 Object.assign(sn(),{n:'Scharfschützengewehr',mag:5,dmg:120,rt:2.8,cd:1.5,auto:0,k:1.4,rec:.05,sp:.03,zoom:.13,sh:.35,snd:.45,vol:.9,hip:new THREE.Vector3(.2,-.2,-.38),ads:new THREE.Vector3(0,-.09,-.25)}),Object.assign(flash(),{n:'Taschenlampe',tool:1,mag:0,zoom:1,hip:new THREE.Vector3(.2,-.17,-.38),ads:new THREE.Vector3(.2,-.17,-.38)}),
 Object.assign(pistol(),{n:'Pistole',mag:12,dmg:30,rt:1.5,cd:.16,auto:0,k:.5,rec:.016,sp:.015,zoom:.75,sh:.1,snd:.12,vol:.35,hip:new THREE.Vector3(.18,-.17,-.3),ads:new THREE.Vector3(0,-.062,-.2)}),
 Object.assign(shotgun(),{n:'Schrotflinte',mag:6,dmg:16,rt:2.6,cd:.85,auto:0,k:1.1,rec:.04,sp:.045,pel:9,zoom:.8,sh:.3,snd:.35,vol:.8,hip:new THREE.Vector3(.2,-.2,-.38),ads:new THREE.Vector3(0,-.07,-.22)})];
-WP[0].mag=WP[0].g.children[9];for(const w of WP)if(!w.tool&&!w.bow&&!w.pel){const m=w.mz.position;w.sup=cy(.021,.021,.2,0,m.y,m.z-.1,dark);w.sup.visible=false;w.g.add(w.sup)}
+WP[0].magM=WP[0].g.children[9];for(const w of WP)if(!w.tool&&!w.bow&&!w.pel){const m=w.mz.position;w.sup=cy(.021,.021,.2,0,m.y,m.z-.1,dark);w.sup.visible=false;w.g.add(w.sup)}
 WP.forEach(w=>{w.g.visible=false;w.g.traverse(o=>o.frustumCulled=false);cam.add(w.g)});
 const fsp=new THREE.SpotLight(0xfff0d0,0,75,.5,.6,1.3);fsp.position.set(.2,-.15,-.5);cam.add(fsp,fsp.target);fsp.target.position.set(.2,-.15,-12);
 const bm=new THREE.Mesh(new THREE.ConeGeometry(5,16,24,1,true).translate(0,-8,0).rotateX(Math.PI/2),new THREE.ShaderMaterial({uniforms:{k:{value:1}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,vertexShader:'varying float vv;void main(){vv=uv.y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float k;varying float vv;void main(){gl_FragColor=vec4(1.,.95,.8,pow(vv,1.6)*.13*k);}'}));
@@ -670,7 +670,7 @@ let hit=false;for(const an of animals)if(an.alive&&Math.hypot(a.p.x-an.g.positio
 if(!hit){if(a.p.y<H(a.p.x,a.p.z))hit=true;else for(const q of trees)if(q.r>0&&Math.hypot(a.p.x-q.x,a.p.z-q.z)<q.r+.1&&a.p.y<H(q.x,q.z)+(q.vi!==undefined?9*q.s:q.r)){hit=true;break}}
 if(hit){a.stuck=true;break}}a.m.position.copy(a.p);a.m.lookAt(a.p.x+a.v.x,a.p.y+a.v.y,a.p.z+a.v.z)}}
 function wpExtra(w,dt){if(!w)return;
-if(w.mag){if(!w.m0)w.m0=w.mag.position.clone();const t=rel>0?1-rel/w.rt:1;let o=0;if(t<.3)o=t/.3;else if(t<.65)o=1;else o=1-(t-.65)/.35;w.mag.position.y=w.m0.y-o*.3;w.mag.rotation.x=o*.4;w.mag.visible=!(t>.4&&t<.55)}
+if(w.magM){if(!w.m0)w.m0=w.magM.position.clone();const t=rel>0?1-rel/w.rt:1;let o=0;if(t<.3)o=t/.3;else if(t<.65)o=1;else o=1-(t-.65)/.35;w.magM.position.y=w.m0.y-o*.3;w.magM.rotation.x=o*.4;w.magM.visible=!(t>.4&&t<.55)}
 if(w.pump){if(w.p0===undefined)w.p0=w.pump.position.z;const p=Math.min(1,Math.max(0,1-cd/w.cd));w.pump.position.z=w.p0+Math.sin(Math.min(1,Math.max(0,(p-.15)/.6))*Math.PI)*.09}
 if(w.bow){if(trig&&started&&!devOpen&&!pl.dead)bowDraw=Math.min(1,bowDraw+dt/.9);else if(bowDraw>0){if(bowDraw>.25)shootArrow(bowDraw);bowDraw=0}w.updS(bowDraw)}}
 addEventListener('keydown',e=>{if(e.code==='KeyN')toggleMap();if(e.code==='KeyM')sitToggle();if(e.code==='KeyT'&&cur>=0&&WP[cur].sup){const w=WP[cur];w.supOn=!w.supOn;w.sup.visible=w.supOn}});
