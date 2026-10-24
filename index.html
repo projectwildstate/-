@@ -542,7 +542,7 @@ const dbl=(c,r)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:0
 const sph=(r,x,y,z,sx,sy,sz,m)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,12,9),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);return o},
 cyl=(r1,r2,l,x,y,z,m)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,l,8).translate(0,-l/2,0),m);o.position.set(x,y,z);return o},
 aext=(pts,dep,mat,bev)=>{const m=ext(pts,dep,mat,0,0,bev);m.rotation.y=Math.PI;return m};
-const animals=[],bloods=[],brass=MM(0xc8a24a,.9,.3),cgeo=new THREE.CylinderGeometry(.0055,.0055,.039,8),cas=[],BG=64,BC=.06;let scare=0,ci=0;
+const animals=[],bloods=[],brass=MM(0xc8a24a,.9,.3),cgeo=new THREE.CylinderGeometry(.0055,.0055,.039,8),cas=[],BG=96,BC=.08;let scare=0,ci=0;
 for(let i=0;i<16;i++){const m=new THREE.Mesh(cgeo,brass);m.visible=false;scene.add(m);cas.push({m,v:new THREE.Vector3(),w:new THREE.Vector3(),t:0})}
 function eject(){const c=cas[ci++%16],r=new THREE.Vector3(1,0,0).applyEuler(cam.rotation),u=new THREE.Vector3(0,1,0).applyEuler(cam.rotation),f=new THREE.Vector3(0,0,-1).applyEuler(cam.rotation);cam.localToWorld(c.m.position.set(.17,-.1,-.3));
 c.v.set(0,0,0).addScaledVector(r,ra(2,3.5)).addScaledVector(u,ra(1.2,2.4)).addScaledVector(f,rr(.8));c.w.set(rr(30),rr(30),rr(30));c.t=4;c.m.visible=true}
@@ -571,17 +571,22 @@ for(let i=0;i<9;i++)for(let k=0;k<30;k++){const z=ra(-200,200),x=RC(z)+(Math.ran
 for(let i=0;i<16;i++)for(let k=0;k<30;k++){const x=ra(-110,110),z=ra(-110,110),y=H(x,z);if(Math.hypot(x,z)>10&&y>WL+.6&&y<20){const d=mkRabbit();d.g.position.set(x,y,z);addA(d,'rabbit',{n:'Hase',walk:.7,run:6,gait:5,hop:1,r:.28,cy:.2,lift:.12,pr:.35});break}}
 for(let f=0;f<3;f++){const z0=ra(-250,250),dir=f%2?1:-1,spd=ra(9,13),alt=ra(14,32);for(let i=0;i<5;i++){const d=mkBird(f===1);addA(d,'bird',{n:'Vogel',fl:{z:z0+rr(6)*i,off:ra(-8,8),alt:alt+rr(4),spd,dir},r:.4,cy:0,pr:.2})}}
 /* Blut: fließt als Flüssigkeit am Boden */
-function makeBlood(x,z){const d={b:new Float32Array(BG*BG),h:new Float32Array(BG*BG),px:new Uint8Array(BG*BG*4),src:0,rate:4,act:true,acc:0,still:0},x0=x-BG*BC/2,z0=z-BG*BC/2;
-for(let j=0;j<BG;j++)for(let i=0;i<BG;i++)d.h[j*BG+i]=H(x0+i*BC,z0+j*BC);for(let k=3;k<d.px.length;k+=4)d.px[k]=255;
-d.tex=new THREE.DataTexture(d.px,BG,BG,THREE.RGBAFormat);d.tex.minFilter=d.tex.magFilter=THREE.LinearFilter;d.tex.needsUpdate=true;
-const ge=new THREE.PlaneGeometry(BG*BC,BG*BC,24,24).rotateX(Math.PI/2),P2=ge.attributes.position;for(let i=0;i<P2.count;i++)P2.setY(i,H(x+P2.getX(i),z+P2.getZ(i))+.035);ge.computeVertexNormals();
-d.m=new THREE.Mesh(ge,new THREE.MeshStandardMaterial({color:0x5a0606,roughness:.18,metalness:0,transparent:true,alphaMap:d.tex,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));d.m.position.set(x,0,z);scene.add(d.m);
-bloods.push(d);if(bloods.length>8){const o=bloods.shift();scene.remove(o.m);o.m.geometry.dispose();o.tex.dispose()}return d}
-function bloodStep(d,dt){d.acc+=dt;if(d.acc<.05)return;const st=d.acc;d.acc=0;const b=d.b,h=d.h,n=BG;if(d.src>0){d.src-=st;b[(n>>1)*n+(n>>1)]+=d.rate*st}
-const nb=b.slice();let mv=0;for(let j=1;j<n-1;j++)for(let i=1;i<n-1;i++){const c=j*n+i,v=b[c];if(v<.012)continue;const E=h[c]+v*.05;
-for(const o of[c-1,c+1,c-n,c+n]){const df=E-(h[o]+b[o]*.05);if(df>0){const f=Math.min(v*.2,df*2.2+v*.02);nb[c]-=f;nb[o]+=f;mv+=f}}}
-for(let k=0;k<n*n;k++){b[k]=Math.max(0,nb[k]);const a=b[k]<.01?0:Math.min(255,(1-Math.exp(-b[k]*8))*255)|0,o=k*4;d.px[o]=d.px[o+1]=d.px[o+2]=a}
-d.tex.needsUpdate=true;if(d.src<=0&&mv<.02){d.still+=st;if(d.still>2)d.act=false}else d.still=0}
+const FLO=new Int32Array(8),FLF=new Float32Array(8);
+function makeBlood(x,z){const d={b:new Float32Array(BG*BG),h:new Float32Array(BG*BG),px:new Uint8Array(BG*BG*4),pc:new Uint8Array(BG*BG*4),src:0,rate:4,act:true,acc:0,still:0,age:0,si:BG>>1,sj:BG>>1,x0:x-BG*BC/2,z0:z-BG*BC/2};
+for(let j=0;j<BG;j++)for(let i=0;i<BG;i++)d.h[j*BG+i]=H(d.x0+i*BC,d.z0+j*BC);for(let k=3;k<d.px.length;k+=4){d.px[k]=255;d.pc[k]=255}
+d.tex=new THREE.DataTexture(d.px,BG,BG,THREE.RGBAFormat);d.tc=new THREE.DataTexture(d.pc,BG,BG,THREE.RGBAFormat);for(const t of[d.tex,d.tc]){t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true}
+const ge=new THREE.PlaneGeometry(BG*BC,BG*BC,32,32).rotateX(Math.PI/2),P2=ge.attributes.position;for(let i=0;i<P2.count;i++)P2.setY(i,H(x+P2.getX(i),z+P2.getZ(i))+.035);ge.computeVertexNormals();
+d.m=new THREE.Mesh(ge,new THREE.MeshStandardMaterial({map:d.tc,roughness:.1,metalness:0,transparent:true,alphaMap:d.tex,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));d.m.position.set(x,0,z);scene.add(d.m);
+bloods.push(d);if(bloods.length>8){const o=bloods.shift();scene.remove(o.m);o.m.geometry.dispose();o.tex.dispose();o.tc.dispose()}return d}
+const NB8=[[-1,0,1],[1,0,1],[0,-1,1],[0,1,1],[-1,-1,.7],[1,-1,.7],[-1,1,.7],[1,1,.7]];
+function bloodStep(d,dt){d.acc+=dt;if(d.acc<.05)return;const st=d.acc;d.acc=0;d.age+=st;const b=d.b,h=d.h,n=BG;if(d.src>0){d.src-=st;b[d.sj*n+d.si]+=d.rate*st}
+const nb=b.slice();let mv=0;
+for(let j=1;j<n-1;j++)for(let i=1;i<n-1;i++){const c=j*n+i,v=b[c];if(v<.01)continue;const E=h[c]+v*.03;let cnt=0,tot=0;
+for(let q=0;q<8;q++){const nq=NB8[q],o=c+nq[0]+nq[1]*n,df=(E-(h[o]+b[o]*.03))/(nq[2]*BC);if(df>0){const f=df*(.4+Math.min(1,v*1.5));FLO[cnt]=o;FLF[cnt++]=f;tot+=f}}
+if(cnt){const mx=Math.min(v*.5,tot*.35);for(let q=0;q<cnt;q++){const m=mx*FLF[q]/tot;nb[c]-=m;nb[FLO[q]]+=m;mv+=m}}}
+const ag=Math.min(1,d.age/60);
+for(let k=0;k<n*n;k++){const v=Math.max(0,nb[k]);b[k]=v;const o=k*4,a=v<.008?0:Math.min(255,(1-Math.exp(-v*9))*255)|0,t=Math.min(1,v/.9);d.px[o]=d.px[o+1]=d.px[o+2]=a;d.pc[o]=(150-110*t-40*ag)|0;d.pc[o+1]=(10-6*t)|0;d.pc[o+2]=(8-5*t)|0}
+d.tex.needsUpdate=true;d.tc.needsUpdate=true;if(d.src<=0&&mv<.01){d.still+=st;if(d.still>3)d.act=false}else d.still=0}
 function rag(a,dt){const r=a.rag;if(!r||r.done)return;r.t+=dt;const p=a.g.position,fl=a.type==='bird'?.05:0,gy=H(p.x,p.z)+fl,air=p.y>gy+.03;r.vy-=18*dt;p.x+=r.vx*dt;p.y+=r.vy*dt;p.z+=r.vz*dt;
 if(p.y<gy){p.y=gy;r.vy=r.vy<-1.5?-r.vy*.25:0;r.vx*=1-dt*6;r.vz*=1-dt*6}
 if(a.type==='bird'){if(air){a.g.rotation.x+=r.wx*dt;a.g.rotation.z+=r.wz*dt}else{a.g.rotation.x*=1-dt*4;a.g.rotation.z+=(2.8-a.g.rotation.z)*Math.min(1,dt*4)}a.wings.forEach(w=>{w.rotation.z+=(w.userData.s*1.2-w.rotation.z)*Math.min(1,dt*6);w.userData.q.rotation.z+=(w.userData.s*.8-w.userData.q.rotation.z)*Math.min(1,dt*6)})}
@@ -591,16 +596,20 @@ if(!r.bd&&!air&&r.t>.25){r.bd=makeBlood(p.x,p.z);r.bd.src=a.type==='deer'?9:5;r.
 function flyBird(a,dt){const f=a.fl,p=a.g.position,ox=p.x,oz=p.z;f.z+=f.spd*f.dir*dt;if(f.z>285)f.z=-285;if(f.z<-285)f.z=285;const x=RC(f.z)+f.off+Math.sin(f.z*.07+f.off)*9;
 p.set(x,Math.max(H(x,f.z),WL)+f.alt+Math.sin(tm*.7+f.off)*1.5,f.z);if(Math.abs(f.z-oz)<5){const yw=Math.atan2(x-ox,f.z-oz),dy=((yw-a.yaw+Math.PI*3)%(Math.PI*2))-Math.PI;a.g.rotation.z=-Math.max(-.6,Math.min(.6,dy*6));a.yaw=yw;a.g.rotation.y=yw}
 a.ph+=dt*(10+f.off*.2);const am=Math.sin(tm*.3+f.off)>.75?.05:.75;for(const w of a.wings){w.rotation.z=w.userData.s*Math.sin(a.ph)*am;w.userData.q.rotation.z=w.userData.s*Math.sin(a.ph-.9)*am*.8}}
+const stainG=new THREE.CircleGeometry(1,10),stainM=new THREE.MeshStandardMaterial({color:0x4a0505,roughness:.25,transparent:true,opacity:.95,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,depthWrite:false,side:THREE.DoubleSide}),DRIP=sys(160,glowTex,0x6a0808,false),dpend=[];
+function woundMark(a,h){if(!a.b)return;const loc=a.b.worldToLocal(new THREE.Vector3(h.x,h.y,h.z)),c=a.type==='deer'?new THREE.Vector3(0,.9,0):new THREE.Vector3(0,.12,0),n=loc.clone().sub(c).normalize();a.wp=loc.clone();
+const st=new THREE.Mesh(stainG,stainM);st.position.copy(loc).addScaledVector(n,.012);st.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),n);st.userData={t:0,m:ra(.07,.13)*(a.type==='rabbit'?.4:1)};st.scale.set(.02,.02,1);a.b.add(st);(a.stains=a.stains||[]).push(st);a.flinch=.3}
+function drip(a){if(!a.wp)return;const w=a.b.localToWorld(a.wp.clone()),hh=w.y-H(w.x,w.z);if(hh<.05)return;const t=Math.sqrt(2*hh/9.8);DRIP.em(w.x,w.y,w.z,rr(.05),0,rr(.05),t+.05,.022,.026,.95);dpend.push({t,x:w.x,z:w.z})}
 const bdrops=[],bgeo=new THREE.CircleGeometry(1,10).rotateX(-Math.PI/2),bmat=new THREE.MeshStandardMaterial({color:0x5a0606,roughness:.2,metalness:0,transparent:true,opacity:.92,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5,depthWrite:false});let bdi=0;
 function dropBlood(x,z){let m=bdrops[bdi%90];if(!m){m=new THREE.Mesh(bgeo,bmat);scene.add(m);bdrops[bdi%90]=m}bdi++;const y=H(x,z),sx=H(x-.3,z)-H(x+.3,z),sz=H(x,z-.3)-H(x,z+.3);m.position.set(x,y+.045,z);m.rotation.y=Math.atan2(sx,sz);m.userData={t:0,w:ra(.04,.09),st:Math.hypot(sx,sz)};m.scale.set(.02,1,.02)}
 const DEERPTS=[[0,.85,.6],[0,.95,-.6],[0,1.15,0],[.2,.68,.2],[-.2,.68,.2],[0,1.12,.35]],RABPTS=[[0,.12,.15],[0,.14,-.15],[.1,.1,0],[-.1,.1,0],[0,.25,0]].map(a=>new THREE.Vector3(a[0],a[1],a[2])),UPV=new THREE.Vector3(0,1,0);
-function hitAnimal(a,d,h,dmg){dmg=dmg||100;const ry=h.y-a.g.position.y;let z=1;if(a.type==='deer')z=ry<.7?.6:ry>1.45?3:1;else if(a.type==='rabbit')z=ry>.28?2:1;a.hp-=dmg*z;
+function hitAnimal(a,d,h,dmg){dmg=dmg||100;woundMark(a,h);const ry=h.y-a.g.position.y;let z=1;if(a.type==='deer')z=ry<.7?.6:ry>1.45?3:1;else if(a.type==='rabbit')z=ry>.28?2:1;a.hp-=dmg*z;
 if(a.hp>0){a.wound=1;a.bleedT=25;a.hurt=10;scare=Math.max(scare,6);if(a.legs&&a.legs.length&&ry<.7){const c=Math.cos(a.yaw),s=Math.sin(a.yaw),dx=h.x-a.g.position.x,dz=h.z-a.g.position.z,lx=dx*c-dz*s,lz=dx*s+dz*c;let bi=0,bd=9;[[-.15,-.45],[-.15,.45],[.15,-.45],[.15,.45]].forEach((q,i)=>{const dd=Math.hypot(q[0]-lx,q[1]-lz);if(dd<bd){bd=dd;bi=i}});a.limp=bi}return}
 a.alive=false;if(a.type==='bird')a.rag={vx:d.x*4+rr(1),vy:3+Math.random()*2,vz:d.z*4+rr(1),side:1,wx:rr(8),wz:rr(8),t:0,leg:[0,0,0,0],leg2:[0,0,0,0]};else startRag(a,d)}
-function startRag(a,d){const sc=a.type==='deer'?.95:1,c=a.type==='deer'?new THREE.Vector3(0,.9*sc,0):new THREE.Vector3(0,.12,0),q=a.g.quaternion.clone(),p=a.g.position.clone().add(c.clone().applyQuaternion(q));
+function startRag(a,d){a.bleedT=Math.max(a.bleedT||0,25);const sc=a.type==='deer'?.95:1,c=a.type==='deer'?new THREE.Vector3(0,.9*sc,0):new THREE.Vector3(0,.12,0),q=a.g.quaternion.clone(),p=a.g.position.clone().add(c.clone().applyQuaternion(q));
 a.rg={c,p,q,v:new THREE.Vector3(d.x*4,3+Math.random()*2,d.z*4),w:new THREE.Vector3(rr(5),rr(3),rr(5)),pts:a.type==='deer'?DEERPTS.map(t=>new THREE.Vector3(t[0]*sc,t[1]*sc,t[2]*sc)):RABPTS,I:a.type==='deer'?.45:.03,t:0,rest:0,
 th:a.legs.map(l=>l.p.rotation.x),tv:a.legs.map(()=>rr(4)),t2:a.legs.map(l=>l.l.rotation.x),tv2:a.legs.map(()=>0),hd:a.hg?a.hg.rotation.x:0,hv:0}}
-function ragdoll(a,dt){const r=a.rg;if(!r||r.done)return;r.t+=dt;
+function ragdoll(a,dt){const r=a.rg;if(!r||r.done)return;r.t+=dt;if(a.wp&&(a.bleedT=(a.bleedT||0)-dt)>0&&(a.dt=(a.dt||0)-dt)<=0){a.dt=ra(.12,.3);drip(a)}
 if(r.rest<1.2){const n=2,h=dt/n;for(let it=0;it<n;it++){r.v.y-=18*h;r.p.addScaledVector(r.v,h);const dq=new THREE.Quaternion(r.w.x,r.w.y,r.w.z,0).multiply(r.q);r.q.x+=dq.x*.5*h;r.q.y+=dq.y*.5*h;r.q.z+=dq.z*.5*h;r.q.w+=dq.w*.5*h;r.q.normalize();let mp=0;
 for(const pt of r.pts){const rel=pt.clone().sub(r.c).applyQuaternion(r.q),pw=r.p.clone().add(rel),gy=H(pw.x,pw.z)+.05;if(pw.y<gy){mp=Math.max(mp,gy-pw.y);const vp=r.v.clone().add(new THREE.Vector3().crossVectors(r.w,rel));
 if(vp.y<0){const rc=new THREE.Vector3().crossVectors(rel,UPV),j=-1.12*vp.y/(1+rc.lengthSq()/r.I);r.v.y+=j;r.w.add(new THREE.Vector3().crossVectors(rel,new THREE.Vector3(0,j,0)).multiplyScalar(1/r.I));r.v.x*=1-h*5;r.v.z*=1-h*5;r.w.multiplyScalar(1-h*3)}}}r.p.y+=mp}
@@ -610,7 +619,7 @@ if(r.t<4){const gl=new THREE.Vector3(0,-1,0).applyQuaternion(r.q.clone().invert(
 a.legs.forEach((l,i)=>{r.tv[i]+=K*(gl.y*Math.sin(r.th[i])-gl.z*Math.cos(r.th[i]))*dt;r.tv[i]*=k;r.th[i]=Math.max(-1.6,Math.min(1.6,r.th[i]+r.tv[i]*dt));
 const f=r.th[i]+r.t2[i];r.tv2[i]+=(K*(gl.y*Math.sin(f)-gl.z*Math.cos(f))-.4*K*(gl.y*Math.sin(r.th[i])-gl.z*Math.cos(r.th[i])))*dt;r.tv2[i]*=1-dt*4;r.t2[i]=Math.max(-.1,Math.min(1.8,r.t2[i]+r.tv2[i]*dt));l.p.rotation.x=r.th[i];l.l.rotation.x=r.t2[i]});
 if(a.hg){const f=r.hd+.6;r.hv+=K*(-gl.y*Math.sin(f)+gl.z*Math.cos(f))*dt;r.hv*=1-dt*4;r.hd=Math.max(-1.4,Math.min(1.6,r.hd+r.hv*dt));a.hg.rotation.x=r.hd}}
-if(!r.bd&&r.t>.6){r.bd=makeBlood(r.p.x,r.p.z);r.bd.src=a.type==='deer'?9:5;r.bd.rate=a.type==='deer'?5:3}if(r.t>14)r.done=true}
+if(!r.bd&&(r.rest>.4||r.t>7)){const bd=r.bd=makeBlood(r.p.x,r.p.z);bd.src=a.type==='deer'?10:5;bd.rate=a.type==='deer'?5:3;if(a.wp){const w=a.b.localToWorld(a.wp.clone());bd.si=Math.max(3,Math.min(BG-4,Math.round((w.x-bd.x0)/BC)));bd.sj=Math.max(3,Math.min(BG-4,Math.round((w.z-bd.z0)/BC)))}}if(r.t>14)r.done=true}
 const DGAIT={w:[.75,0,.25,.5],t:[.5,0,0,.5],g:[0,.5,.08,.58]};
 function gait(a,sp,mode,dt){const offs=DGAIT[mode],A=mode==='w'?.35:mode==='t'?.5:.75,F=mode==='w'?1:mode==='t'?1.3:1.5,k=Math.min(1,dt*18);
 a.legs.forEach((l,i)=>{let t1=0,t2=.05;if(sp>.05){const c=((a.cyc+offs[i])%1+1)%1;if(c<.55)t1=-A+2*A*(c/.55);else{const u=(c-.55)/.45;t1=A-2*A*u;t2=F*Math.sin(Math.PI*u)}}
@@ -629,10 +638,12 @@ if(hn<WL+.35||Math.abs(nx)>285||Math.abs(nz)>285||hn>30){a.ty=a.yaw+2.5;a.t=2;sp
 a.ph+=Math.min(sp*a.gait,13)*dt;const mode=sp<2.2?'w':sp<5.5?'t':'g',str=mode==='w'?1.1:mode==='t'?1.6:3.2;a.cyc=(a.cyc||0)+sp/str*dt;
 a.sd=(a.sd||0)+sp*dt;if(a.sd>(a.type==='deer'?.55:.35)){a.sd=0;a.sv=-(a.sv||1);if((S.acc>.1||S.wet>.15)&&Math.hypot(p.x-icx,p.z-icz)<15){const hx=Math.sin(a.yaw),hz=Math.cos(a.yaw);stamp(p.x-hz*.1*a.sv,p.z+hx*.1*a.sv,-a.yaw,a.type==='deer'?.06:.04,a.type==='deer'?.09:.06,S.acc>.1?255:0,S.wet>.15?255:0)}}
 p.y=H(p.x,p.z)+(a.hop&&sp>0?Math.abs(Math.sin(a.ph))*.25:0);a.g.rotation.y=a.yaw;
-if(a.legs.length)gait(a,sp,mode,dt);
+if(a.legs.length)gait(a,sp,mode,dt);if(a.flinch>0){a.flinch-=dt;a.b.rotation.x+=Math.sin(a.flinch*30)*.12}
 if(a.hop){a.b.rotation.x=sp>0?Math.sin(a.ph)*.35:0;a.ears.forEach(e=>e.rotation.x=-(sp>0?.5+.4*Math.sin(a.ph):.1))}
-if(a.wound&&(a.bleedT-=dt)>0&&sp>0&&(a.bt=(a.bt||0)-dt)<=0){a.bt=.3;dropBlood(p.x+rr(.2),p.z+rr(.2))}}
+if(a.wound&&(a.bleedT-=dt)>0&&sp>0&&(a.bt=(a.bt||0)-dt)<=0){a.bt=.3;dropBlood(p.x+rr(.2),p.z+rr(.2))}if(a.wp&&a.bleedT>0&&(a.dt=(a.dt||0)-dt)<=0){a.dt=ra(.18,.35);drip(a)}}
 for(const m of bdrops){if(!m)continue;const u=m.userData;u.t+=dt;const k=Math.min(1,u.t/1.5);m.scale.set(u.w*k,1,u.w*k*(1+Math.min(5,u.st*14)*(k+Math.min(u.t,4)*.25)))}
+for(const a of animals)if(a.stains)for(const q of a.stains){q.userData.t+=dt;const k=Math.min(q.userData.m,.02+q.userData.t*.02);q.scale.set(k,k,1)}
+for(let i=dpend.length-1;i>=0;i--){const q=dpend[i];q.t-=dt;if(q.t<=0){dropBlood(q.x,q.z);dpend.splice(i,1)}}DRIP.up(dt,9.8,0);
 for(const d of bloods)if(d.act)bloodStep(d,dt);
 for(const c of cas)if(c.t>0){c.t-=dt;c.v.y-=9.8*dt;c.m.position.addScaledVector(c.v,dt);c.m.rotation.x+=c.w.x*dt;c.m.rotation.z+=c.w.z*dt;const gy=H(c.m.position.x,c.m.position.z)+.006;if(c.m.position.y<gy){c.m.position.y=gy;c.v.multiplyScalar(.3);c.v.y=Math.abs(c.v.y)*.4;c.w.multiplyScalar(.4)}if(c.t<=0)c.m.visible=false}}
 function eatNow(){if(!eTarget||pl.dead)return;const a=eTarget;hun=Math.min(100,hun+(a.type==='deer'?45:a.type==='rabbit'?25:15));hp=Math.min(100,hp+5);a.eaten=true;scene.remove(a.g);burst(.18,1800,'bandpass',.35,0,.8);burst(.2,900,'bandpass',.3,.18,.8);animals.splice(animals.indexOf(a),1);eTarget=null}
