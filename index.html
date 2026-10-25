@@ -577,7 +577,7 @@ for(let j=0;j<BG;j++)for(let i=0;i<BG;i++)d.h[j*BG+i]=H(d.x0+i*BC,d.z0+j*BC);for
 d.tex=new THREE.DataTexture(d.px,BG,BG,THREE.RGBAFormat);d.tc=new THREE.DataTexture(d.pc,BG,BG,THREE.RGBAFormat);for(const t of[d.tex,d.tc]){t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true}
 const ge=new THREE.PlaneGeometry(BG*BC,BG*BC,32,32).rotateX(Math.PI/2),P2=ge.attributes.position;for(let i=0;i<P2.count;i++)P2.setY(i,H(x+P2.getX(i),z+P2.getZ(i))+.035);ge.computeVertexNormals();
 d.m=new THREE.Mesh(ge,new THREE.MeshStandardMaterial({map:d.tc,roughness:.1,metalness:0,transparent:true,alphaMap:d.tex,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));d.m.position.set(x,0,z);scene.add(d.m);
-bloods.push(d);if(bloods.length>8){const o=bloods.shift();scene.remove(o.m);o.m.geometry.dispose();o.tex.dispose();o.tc.dispose()}return d}
+bloods.push(d);if(bloods.length>8){const o=bloods.shift();scene.remove(o.m)}return d}
 const NB8=[[-1,0,1],[1,0,1],[0,-1,1],[0,1,1],[-1,-1,.7],[1,-1,.7],[-1,1,.7],[1,1,.7]];
 function bloodStep(d,dt){d.acc+=dt;if(d.acc<.05)return;const st=d.acc;d.acc=0;d.age+=st;const b=d.b,h=d.h,n=BG;if(d.src>0){d.src-=st;b[d.sj*n+d.si]+=d.rate*st}
 const nb=b.slice();let mv=0;
@@ -840,7 +840,8 @@ addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=inne
 
 let gDone=0,gmChk=0,warm=0,sf=0,ft=0,fr=0,fps=60,pr=1.5;const prMax=1.5;R.setPixelRatio(pr);R.setSize(innerWidth,innerHeight);R.shadowMap.autoUpdate=false;
 let last=performance.now(),tm=0;{const x0=pl.x,z0=pl.z;gcx=mcx=fcx=x0;gcz=mcz=fcz=z0;await prog(88,'Gras (nah)');fill(grass,.22,180,1,0,20,1,1,x0,z0);await prog(92,'Gras (mittel)');fill(grassM,.7,220,1,19,70,1.7,1.5,x0,z0);await prog(96,'Gras (fern)');fill(grassF,1.35,200,1,68,140,3.2,2.6,x0,z0);await prog(98,'Shader werden kompiliert')}
-function loop(now){try{loop2(now)}catch(e){dbg.textContent=("Fehler: "+(e&&e.message)+" @ "+((e&&e.stack||"").split("\n")[1]||"")).slice(0,500);dbg.style.display="block"}requestAnimationFrame(loop)}
+function loop(now){try{loop2(now)}catch(e){recover(e)}requestAnimationFrame(loop)}
+function recover(e){const bad=[];scene.traverse(o=>{const g=o.geometry;if(g&&g.attributes){for(const k in g.attributes)if(!g.attributes[k]){o.visible=false;bad.push((o.type||"obj")+":"+k)}if(g.index===undefined){o.visible=false;bad.push((o.type||"obj")+":index")}}if(o.isInstancedMesh&&!o.instanceMatrix){o.visible=false;bad.push("instanced")}});dbg.textContent=("Fehler: "+(e&&e.message)+" | "+((e&&e.stack||"").split("\n").slice(0,4).join(" | "))+(bad.length?" | versteckt: "+bad.join(","):"")).slice(0,700);dbg.style.display="block"}
 function loop2(now){
 const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;if(false){gmChk=1;let bad=false;try{const pp=R.properties.get(gm).currentProgram;bad=!pp||(pp.diagnostics&&pp.diagnostics.runnable===false)}catch(e){}if(bad){const gl_=new THREE.MeshLambertMaterial({map:tex,vertexColors:true});patch(gl_,...GPA);ground.material=gl_}}
 if(warm===0)tcone.visible=true;else if(warm===4&&!tor)tcone.visible=false;
