@@ -178,7 +178,7 @@ const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32
 const GM=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
 patch(GM,'float tp=position.y/.5;transformed.y*=1.-.8*uAcc;transformed.x+=sin(uT*(1.6+uWind*2.)+instanceMatrix[3].x*.6+instanceMatrix[3].z*.45)*tp*tp*(.05+uWind*.14)*(1.+.9*sin(uT*.7+instanceMatrix[3].x*.04+instanceMatrix[3].z*.03));vWP=(instanceMatrix*vec4(transformed,1.)).xyz;vWN=vec3(0.,tp,0.);',
 'diffuseColor.rgb*=1.-.3*uWet;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.93,.95,1.),smoothstep(.1,.8,uAcc)*(.35+.65*vWN.y));diffuseColor.rgb*=1.-.4*smoothstep(.42,.68,vn(vWP.xz*.011+vec2(uT*.03,uT*.012))*.65+vn(vWP.xz*.034+vec2(uT*.05,uT*.02))*.35)*(.25+.75*uCov);');
-const mkG=n=>{const m=new THREE.InstancedMesh(bg,GM,n);m.frustumCulled=false;scene.add(m);return m},grass=mkG(27000),grassM=mkG(30000),grassF=mkG(27000);
+const mkG=n=>{const m=new THREE.InstancedMesh(bg,GM,n);m.setColorAt(0,new THREE.Color(1,1,1));m.frustumCulled=false;scene.add(m);return m},grass=mkG(27000),grassM=mkG(30000),grassF=mkG(27000);
 const dm=new THREE.Object3D(),cc=new THREE.Color();let gcx=1e9,gcz=1e9,mcx=1e9,mcz=1e9,fcx=1e9,fcz=1e9;
 function fill(M,S,N,per,r0,r1,sx,sy,x0,z0){let k=0;const mx=M.instanceMatrix.count;
 for(let i=-N/2;i<N/2;i++)for(let j=-N/2;j<N/2;j++){const gx=Math.round(x0/S)+i,gz=Math.round(z0/S)+j,dd=Math.hypot(gx*S-x0,gz*S-z0);if(dd<r0||dd>r1)continue;
@@ -214,14 +214,14 @@ const V=[oak(),oak(),oak(),pine(),pine(),pine()],treeM=new THREE.MeshLambertMate
 patch(treeM,'transformed.x+=sin(uT*1.1+instanceMatrix[3].x*.3+position.y*.2)*pow(max(position.y,0.)/9.,2.)*.3*(1.+uWind*3.);'+IV,'float sn=clamp(uAcc*1.6-.15,0.,1.)*smoothstep(.1,.65,vWN.y+(vn(vWP.xz*2.5+vWP.y)-.5)*.35);diffuseColor.rgb*=1.-.22*uWet;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.94,.96,1.),sn*.96);');
 const TM=[],trees=[],bk=V.map(()=>[]);
 for(let i=0;i<200;i++){let x,z;do{x=(Math.random()-.5)*520;z=(Math.random()-.5)*520}while(Math.hypot(x,z)<14||H(x,z)>34||Math.hypot(x-VX,z-VZ)<40||Math.abs(x-RC(z))<16);const s=.8+Math.random()*.6;const vi=Math.floor(Math.random()*6),mt=MT(x,H(x,z)-.1,z,s,s,s,0,Math.random()*6.28,0);trees.push({x,z,r:.4*s,vi,k:bk[vi].length,s,mt,hp:4,alive:true});bk[vi].push(mt)}
-V.forEach((v,i)=>{const m=new THREE.InstancedMesh(v,treeM,Math.max(1,bk[i].length));bk[i].forEach((mt,k)=>m.setMatrixAt(k,mt));m.count=bk[i].length;m.castShadow=m.receiveShadow=true;m.frustumCulled=false;for(let k=0;k<bk[i].length;k++)m.setColorAt(k,new THREE.Color(.8+Math.random()*.4,.85+Math.random()*.3,.75+Math.random()*.35));scene.add(m);TM[i]=m});
+V.forEach((v,i)=>{const m=new THREE.InstancedMesh(v,treeM,Math.max(1,bk[i].length));bk[i].forEach((mt,k)=>m.setMatrixAt(k,mt));m.count=bk[i].length;m.castShadow=m.receiveShadow=true;m.frustumCulled=false;for(let k=0;k<bk[i].length;k++)m.setColorAt(k,new THREE.Color(.8+Math.random()*.4,.85+Math.random()*.3,.75+Math.random()*.35));if(!m.instanceColor)m.setColorAt(0,new THREE.Color(1,1,1));scene.add(m);TM[i]=m});
 const rkG=part(new THREE.IcosahedronGeometry(1,1),MT(0,0,0,1,.65,.85),(x,y,z)=>{const k=.3+.2*vn(x*3+y,z*3);return new THREE.Color(k,k*.96,k*.9)},(x,y,z)=>1+.35*(vn(x*2+1,y*2+z*2)-.5));
 const rk=new THREE.InstancedMesh(rkG,treeM,170);
 for(let i=0;i<170;i++){const x=(Math.random()-.5)*540,z=(Math.random()-.5)*540,s=.25+Math.random()*Math.random()*2.2;rk.setMatrixAt(i,MT(x,H(x,z)+s*.1,z,s,s,s,0,Math.random()*6.28,0));if(Math.hypot(x,z)>10&&s>.6)trees.push({x,z,r:s*.8})}
-rk.castShadow=rk.receiveShadow=true;rk.frustumCulled=false;scene.add(rk);
+for(let i=0;i<170;i++)rk.setColorAt(i,new THREE.Color(.85+Math.random()*.3,.85+Math.random()*.3,.85+Math.random()*.3));rk.castShadow=rk.receiveShadow=true;rk.frustumCulled=false;scene.add(rk);
 function bush(){const A=[];for(let k=0;k<5;k++){const a=rnd()*6.28,d=rnd()*.7,r=.5+rnd()*.5;A.push(part(new THREE.IcosahedronGeometry(1,2),MT(Math.cos(a)*d,r*.6,Math.sin(a)*d,r,r*.7,r),(x,y,z)=>new THREE.Color().setHSL(.27+.04*vn(x*2,z*2),.5,.1+.15*Math.min(1,y/1.2)+.07*vn(x*5,y*5+z*5)),(x,y,z)=>1+.3*(vn(x*3+k,y*3+z*3)-.5)))}return merge(A)}
 const bsh=new THREE.InstancedMesh(bush(),treeM,200);for(let i=0;i<200;i++){const x=(Math.random()-.5)*540,z=(Math.random()-.5)*540,y=H(x,z),s=y>30||y<WL+.3||Math.hypot(x-VX,z-VZ)<40?0:.6+Math.random()*.9;bsh.setMatrixAt(i,MT(x,y-.05,z,s,s,s,0,Math.random()*6.28,0))}
-bsh.castShadow=bsh.receiveShadow=true;bsh.frustumCulled=false;scene.add(bsh);
+for(let i=0;i<200;i++)bsh.setColorAt(i,new THREE.Color(.85+Math.random()*.3,.85+Math.random()*.3,.85+Math.random()*.3));bsh.castShadow=bsh.receiveShadow=true;bsh.frustumCulled=false;scene.add(bsh);
 
 await prog(56,'Himmel');
 /* Himmel */
@@ -791,7 +791,7 @@ if(Math.hypot(x0-fcx,z0-fcz)>45){fcx=x0;fcz=z0;jobs.far=fillG(grassF,1.35,200,1,
 /* Mehr Realismus: Nebel über dem Wasser, umgestürzte Stämme, Bildgrading */
 const MIST=sys(260,puffTex,0xdde6ec,false);
 {const lg2=part(new THREE.CylinderGeometry(.2,.23,3,8).rotateZ(Math.PI/2),MT(0,0,0,1,1,1),bark),pl2=nearTrees(90,2,9),m=new THREE.InstancedMesh(lg2,treeM,Math.max(1,pl2.length));
-pl2.forEach((p,i)=>{const sc=ra(.7,1.4);m.setMatrixAt(i,MT(p[0],p[1]+.15,p[2],sc,sc,sc,0,Math.random()*6.283,rr(.15)))});m.count=pl2.length;m.frustumCulled=false;m.castShadow=m.receiveShadow=true;scene.add(m)}
+pl2.forEach((p,i)=>{const sc=ra(.7,1.4);m.setMatrixAt(i,MT(p[0],p[1]+.15,p[2],sc,sc,sc,0,Math.random()*6.283,rr(.15)))});for(let i=0;i<Math.max(1,pl2.length);i++)m.setColorAt(i,new THREE.Color(.85+Math.random()*.3,.85+Math.random()*.3,.85+Math.random()*.3));m.count=pl2.length;m.frustumCulled=false;m.castShadow=m.receiveShadow=true;scene.add(m)}
 R.domElement.style.filter='contrast(1.07) saturate(1.12) brightness(1.02)';
 function wErr(e){dbg.textContent="Waffen-Fehler: "+(e&&e.message)+" @ "+((e&&e.stack||"").split("\n")[1]||"");dbg.style.display="block";if(cur>=0&&WP[cur])WP[cur].g.visible=false;cur=-1;adsT=0}
 function fixBad(){scene.traverse(o=>{const m=o.material;if(!m||Array.isArray(m)||m.isShaderMaterial||m.isPointsMaterial||m.isLineBasicMaterial)return;try{const pp=R.properties.get(m).currentProgram;if(pp&&pp.diagnostics&&pp.diagnostics.runnable===false){o.material=new THREE.MeshLambertMaterial({color:m.color?m.color.getHex():0x888888,map:m.map||null,vertexColors:!!m.vertexColors,side:m.side});dbg.textContent=(dbg.textContent+"Material ersetzt\n").slice(-300);dbg.style.display="block"}}catch(e){}})}
